@@ -11,12 +11,14 @@
 #define NORTH 3
 #define SOUTH 4
 
+//datatype of maze
 struct Cell
 {
     bool eastWall, westWall, northWall, southWall;
     bool visited;
 };
 
+//datatype of current cell
 struct CurrentCell
 {
     int x, y;
@@ -24,6 +26,7 @@ struct CurrentCell
     bool eastAvailable, westAvailable, northAvailable, southAvailable;
 };
 
+//class declaration
 class RecursiveBacktracking
 {
 	public:
@@ -38,12 +41,9 @@ class RecursiveBacktracking
 
 
         int width, height;
+        unsigned int seed;
         CurrentCell currentCell;
         std::vector<std::vector<Cell>> grid;
-        //CurrentCell currentCell;
         std::stack<int> stackX;
         std::stack<int> stackY;
-        unsigned int seed;
-
 };
-

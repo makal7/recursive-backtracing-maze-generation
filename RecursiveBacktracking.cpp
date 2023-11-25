@@ -1,44 +1,54 @@
 #include "RecursiveBacktracking.hpp"
 
+//method that generates a maze
 void RecursiveBacktracking::generateMaze()
 {
-
+    //random starting location
 	currentCell.x = rand() % this->width;
 	currentCell.y = rand() % this->height;
 
-    this->grid[currentCell.x][0].northWall = false; //vstup do bludiska
+    //create entrance to the maze
+    this->grid[currentCell.x][0].northWall = false;
 
+    //set current cell as visited
 	this->grid[currentCell.x][currentCell.y].visited = true;
 
-    do //pokial exstuje nenavstivena bunka
+    //repeat as long as there is an unvisited cell
+    do
     {
+        //set the direction
         if (this->setDirection() == -1)
             continue;
 
-        //pohni sa - sekcia
+        //save the old location
         stackX.push(this->currentCell.x);
         stackY.push(this->currentCell.y);
 
+        //move and make transitions between walls
         switch (this->currentCell.direction)
         {
-        case EAST:  this->grid[this->currentCell.x][this->currentCell.y].eastWall = false; this->currentCell.x += 1; this->grid[this->currentCell.x][this->currentCell.y].westWall = false; break;
-        case WEST:  this->grid[this->currentCell.x][this->currentCell.y].westWall = false; this->currentCell.x -= 1; this->grid[this->currentCell.x][this->currentCell.y].eastWall = false; break;
-        case NORTH: this->grid[this->currentCell.x][this->currentCell.y].northWall = false; this->currentCell.y -= 1; this->grid[this->currentCell.x][this->currentCell.y].southWall = false; break;
-        case SOUTH: this->grid[this->currentCell.x][this->currentCell.y].southWall = false; this->currentCell.y += 1; this->grid[this->currentCell.x][this->currentCell.y].northWall = false; break;
+            case EAST:  this->grid[this->currentCell.x][this->currentCell.y].eastWall = false; this->currentCell.x += 1; this->grid[this->currentCell.x][this->currentCell.y].westWall = false; break;
+            case WEST:  this->grid[this->currentCell.x][this->currentCell.y].westWall = false; this->currentCell.x -= 1; this->grid[this->currentCell.x][this->currentCell.y].eastWall = false; break;
+            case NORTH: this->grid[this->currentCell.x][this->currentCell.y].northWall = false; this->currentCell.y -= 1; this->grid[this->currentCell.x][this->currentCell.y].southWall = false; break;
+            case SOUTH: this->grid[this->currentCell.x][this->currentCell.y].southWall = false; this->currentCell.y += 1; this->grid[this->currentCell.x][this->currentCell.y].northWall = false; break;
         }
 
+        //set current cell as visited
         grid[currentCell.x][currentCell.y].visited = true;
 
     } while (!allVisited());
 
+    //create exit from the maze
     this->grid[currentCell.x][height - 1].southWall = false; //vychod z bludiska
 }
 
+//method that returns the maze
 std::vector<std::vector<Cell>> RecursiveBacktracking::getMaze()
 {
 	return grid;
 }
 
+//method that prints the maze to the console window (need to be rewritten in c++ code)
 void RecursiveBacktracking::printMaze()
 {
     for (int i = 0; i < this->height; i++) {
@@ -58,7 +68,6 @@ void RecursiveBacktracking::printMaze()
                 printf(" ");
 
             printf(" ");
-            // Prostredn˝ znak (bunka) - mÙûete prispÙsobiù podæa potreby
             printf(" ");
         }
 
@@ -68,7 +77,6 @@ void RecursiveBacktracking::printMaze()
             printf(" \n");
     }
 
-    // Posledn˝ riadok
     for (int j = 0; j < this->width; j++) {
         printf("+");
         if (this->grid[j][this->height - 1].southWall)
@@ -79,13 +87,14 @@ void RecursiveBacktracking::printMaze()
     printf("+\n");
 }
 
+//constructor
 RecursiveBacktracking::RecursiveBacktracking(int width_, int height_)
 {
+    //initialization of variables
 	this->width = width_;
 	this->height = height_;
-
-	this->grid.reserve(width);
-
+	
+    this->grid.reserve(width);
 	for (int i = 0; i < width; ++i)
 	{
 		this->grid.push_back(std::vector<Cell>(height));
@@ -103,12 +112,21 @@ RecursiveBacktracking::RecursiveBacktracking(int width_, int height_)
 		}
 	}
 
+    this->currentCell.direction = 0;
+    this->currentCell.eastAvailable = 0;
+    this->currentCell.northAvailable = 0;
+    this->currentCell.southAvailable = 0;
+    this->currentCell.westAvailable = 0;
+    this->currentCell.x = 0;
+    this->currentCell.y = 0;
+    
+    //generate random seed
 	time_t t;
 	this->seed = time(&t);
 	srand(seed);
-
 }
 
+//method that checks if all cells have been visited
 bool RecursiveBacktracking::allVisited()
 {
 	for (int i = 0; i < this->width; i++)
@@ -119,18 +137,19 @@ bool RecursiveBacktracking::allVisited()
 	return true;
 }
 
+//a method that selects a direction
 int RecursiveBacktracking::setDirection()
 {
-    //vyber smer
     this->currentCell.direction = 0;
     this->currentCell.eastAvailable = false;
     this->currentCell.westAvailable = false;
     this->currentCell.northAvailable = false;
     this->currentCell.southAvailable = false;
 
+    //check how many directions of movement are available
     if (this->currentCell.y >= 1)
     {
-        if (this->grid[this->currentCell.x][this->currentCell.y - 1].visited == false) //hore sever
+        if (this->grid[this->currentCell.x][this->currentCell.y - 1].visited == false)
             this->currentCell.northAvailable = true;
         else
             this->currentCell.northAvailable = false;
@@ -138,14 +157,14 @@ int RecursiveBacktracking::setDirection()
 
     if (this->currentCell.y < (this->height - 1))
     {
-        if (this->grid[this->currentCell.x][this->currentCell.y + 1].visited == false) //dole juh
+        if (this->grid[this->currentCell.x][this->currentCell.y + 1].visited == false)
             this->currentCell.southAvailable = true;
         else
             this->currentCell.southAvailable = false;
     }
     if (this->currentCell.x >= 1)
     {
-        if (this->grid[this->currentCell.x - 1][this->currentCell.y].visited == false) //vlavo zapad
+        if (this->grid[this->currentCell.x - 1][this->currentCell.y].visited == false)
             this->currentCell.westAvailable = true;
         else
             this->currentCell.westAvailable = false;
@@ -153,13 +172,14 @@ int RecursiveBacktracking::setDirection()
     if (this->currentCell.x < (this->width - 1))
     {
 
-        if (this->grid[this->currentCell.x + 1][this->currentCell.y].visited == false) //vpravo vychod
+        if (this->grid[this->currentCell.x + 1][this->currentCell.y].visited == false)
             this->currentCell.eastAvailable = true;
         else
             this->currentCell.eastAvailable = false;
     }
 
-    if ((this->currentCell.northAvailable + this->currentCell.southAvailable + this->currentCell.westAvailable + this->currentCell.eastAvailable) == 1) //ak je iba jeden smer volny chod tam
+    //if only one direction is available, go there
+    if ((this->currentCell.northAvailable + this->currentCell.southAvailable + this->currentCell.westAvailable + this->currentCell.eastAvailable) == 1)
     {
         if (this->currentCell.northAvailable)
             this->currentCell.direction = NORTH;
@@ -170,18 +190,11 @@ int RecursiveBacktracking::setDirection()
         if (this->currentCell.eastAvailable)
             this->currentCell.direction = EAST;
 
+        return 0;
     }
 
-    if (((this->currentCell.northAvailable + this->currentCell.southAvailable + this->currentCell.westAvailable + this->currentCell.eastAvailable) == 0) && !allVisited()) //ak nie je dostupny ziadny smer vrat sa o 1
-    {
-        stackX.pop();
-        stackY.pop();
-        this->currentCell.x = stackX.top();
-        this->currentCell.y = stackY.top();
-        return -1;
-    }
-
-    if ((this->currentCell.direction == 0) && (!allVisited() && !(this->currentCell.northAvailable + this->currentCell.southAvailable + this->currentCell.westAvailable + this->currentCell.eastAvailable) == 0)) //inak vyber smer nahodne
+    //if multiple directions are available, randomly select one of them
+    if ((this->currentCell.direction == 0) && (!allVisited() && !(this->currentCell.northAvailable + this->currentCell.southAvailable + this->currentCell.westAvailable + this->currentCell.eastAvailable) == 0))
     {
 
         bool randSus;
@@ -219,6 +232,18 @@ int RecursiveBacktracking::setDirection()
                 }
 
         } while (randSus == false);
+
+        return 0;
+    }
+
+    //if no direction is available go back by 1
+    if (((this->currentCell.northAvailable + this->currentCell.southAvailable + this->currentCell.westAvailable + this->currentCell.eastAvailable) == 0) && !allVisited())
+    {
+        stackX.pop();
+        stackY.pop();
+        this->currentCell.x = stackX.top();
+        this->currentCell.y = stackY.top();
+        return -1;
     }
 
     return 0;
