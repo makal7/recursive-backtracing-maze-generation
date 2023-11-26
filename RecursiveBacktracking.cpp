@@ -27,8 +27,8 @@ void RecursiveBacktracking::generateMaze()
         //move and make transitions between walls
         switch (this->currentCell.direction)
         {
-            case EAST:  this->grid[this->currentCell.x][this->currentCell.y].eastWall = false; this->currentCell.x += 1; this->grid[this->currentCell.x][this->currentCell.y].westWall = false; break;
-            case WEST:  this->grid[this->currentCell.x][this->currentCell.y].westWall = false; this->currentCell.x -= 1; this->grid[this->currentCell.x][this->currentCell.y].eastWall = false; break;
+            case EAST:  this->grid[this->currentCell.x][this->currentCell.y].eastWall  = false; this->currentCell.x += 1; this->grid[this->currentCell.x][this->currentCell.y].westWall  = false; break;
+            case WEST:  this->grid[this->currentCell.x][this->currentCell.y].westWall  = false; this->currentCell.x -= 1; this->grid[this->currentCell.x][this->currentCell.y].eastWall  = false; break;
             case NORTH: this->grid[this->currentCell.x][this->currentCell.y].northWall = false; this->currentCell.y -= 1; this->grid[this->currentCell.x][this->currentCell.y].southWall = false; break;
             case SOUTH: this->grid[this->currentCell.x][this->currentCell.y].southWall = false; this->currentCell.y += 1; this->grid[this->currentCell.x][this->currentCell.y].northWall = false; break;
         }
@@ -39,7 +39,7 @@ void RecursiveBacktracking::generateMaze()
     } while (!allVisited());
 
     //create exit from the maze
-    this->grid[currentCell.x][height - 1].southWall = false; //vychod z bludiska
+    this->grid[currentCell.x][height - 1].southWall = false;
 }
 
 //method that returns the maze
@@ -112,6 +112,7 @@ RecursiveBacktracking::RecursiveBacktracking(int width_, int height_)
 		}
 	}
 
+    this->currentCell.numberOfDirections = 0;
     this->currentCell.direction = 0;
     this->currentCell.eastAvailable = 0;
     this->currentCell.northAvailable = 0;
@@ -122,7 +123,7 @@ RecursiveBacktracking::RecursiveBacktracking(int width_, int height_)
     
     //generate random seed
 	time_t t;
-	this->seed = time(&t);
+	this->seed = (unsigned int) time(&t);
 	srand(seed);
 }
 
@@ -145,99 +146,62 @@ int RecursiveBacktracking::setDirection()
     this->currentCell.westAvailable = false;
     this->currentCell.northAvailable = false;
     this->currentCell.southAvailable = false;
+    this->currentCell.numberOfDirections = 0;
 
-    //check how many directions of movement are available
-    if (this->currentCell.y >= 1)
-    {
-        if (this->grid[this->currentCell.x][this->currentCell.y - 1].visited == false)
-            this->currentCell.northAvailable = true;
-        else
-            this->currentCell.northAvailable = false;
-    }
 
-    if (this->currentCell.y < (this->height - 1))
-    {
-        if (this->grid[this->currentCell.x][this->currentCell.y + 1].visited == false)
-            this->currentCell.southAvailable = true;
-        else
-            this->currentCell.southAvailable = false;
-    }
-    if (this->currentCell.x >= 1)
-    {
-        if (this->grid[this->currentCell.x - 1][this->currentCell.y].visited == false)
-            this->currentCell.westAvailable = true;
-        else
-            this->currentCell.westAvailable = false;
-    }
-    if (this->currentCell.x < (this->width - 1))
-    {
-
-        if (this->grid[this->currentCell.x + 1][this->currentCell.y].visited == false)
-            this->currentCell.eastAvailable = true;
-        else
-            this->currentCell.eastAvailable = false;
-    }
-
-    //if only one direction is available, go there
-    if ((this->currentCell.northAvailable + this->currentCell.southAvailable + this->currentCell.westAvailable + this->currentCell.eastAvailable) == 1)
-    {
-        if (this->currentCell.northAvailable)
-            this->currentCell.direction = NORTH;
-        if (this->currentCell.southAvailable)
-            this->currentCell.direction = SOUTH;
-        if (this->currentCell.westAvailable)
-            this->currentCell.direction = WEST;
-        if (this->currentCell.eastAvailable)
-            this->currentCell.direction = EAST;
-
-        return 0;
-    }
+    //check how many directions and which directions of movement are available
+    this->whichDirectionsAreAvailable();
 
     //if multiple directions are available, randomly select one of them
-    if ((this->currentCell.direction == 0) && (!allVisited() && !(this->currentCell.northAvailable + this->currentCell.southAvailable + this->currentCell.westAvailable + this->currentCell.eastAvailable) == 0))
+    if (this->currentCell.numberOfDirections > 1)
     {
-
-        bool randSus;
+        bool randSus = false;
         int randomDirection;
+
         do
         {
             randomDirection = (rand() % 4) + 1;
-            randSus = false;
-            if (randomDirection == NORTH)
-                if (this->currentCell.northAvailable)
-                {
-                    this->currentCell.direction = NORTH;
-                    randSus = true;
-                }
 
-            if (randomDirection == SOUTH)
-                if (this->currentCell.southAvailable)
-                {
-                    this->currentCell.direction = SOUTH;
-                    randSus = true;
-                }
-
-            if (randomDirection == WEST)
-                if (this->currentCell.westAvailable)
-                {
-                    this->currentCell.direction = WEST;
-                    randSus = true;
-                }
-
-            if (randomDirection == EAST)
-                if (this->currentCell.eastAvailable)
-                {
-                    this->currentCell.direction = EAST;
-                    randSus = true;
-                }
+            switch (randomDirection)
+            {
+            case NORTH: if (this->currentCell.northAvailable) { this->currentCell.direction = NORTH; randSus = true; } break;
+            case SOUTH: if (this->currentCell.southAvailable) { this->currentCell.direction = SOUTH; randSus = true; } break;
+            case WEST:  if (this->currentCell.westAvailable) { this->currentCell.direction = WEST;  randSus = true; } break;
+            case EAST:  if (this->currentCell.eastAvailable) { this->currentCell.direction = EAST;  randSus = true; } break;
+            }
 
         } while (randSus == false);
 
         return 0;
     }
 
+    //if only one direction is available, go there
+    if (this->currentCell.numberOfDirections == 1)
+    {
+        if (this->currentCell.northAvailable)
+        {
+            this->currentCell.direction = NORTH;
+            return 0;
+        }
+        if (this->currentCell.southAvailable)
+        {
+            this->currentCell.direction = SOUTH;
+            return 0;
+        }
+        if (this->currentCell.westAvailable)
+        {
+            this->currentCell.direction = WEST;
+            return 0;
+        }
+        if (this->currentCell.eastAvailable)
+        {
+            this->currentCell.direction = EAST;
+            return 0;
+        }
+    }
+
     //if no direction is available go back by 1
-    if (((this->currentCell.northAvailable + this->currentCell.southAvailable + this->currentCell.westAvailable + this->currentCell.eastAvailable) == 0) && !allVisited())
+    if (this->currentCell.numberOfDirections == 0)
     {
         stackX.pop();
         stackY.pop();
@@ -247,4 +211,59 @@ int RecursiveBacktracking::setDirection()
     }
 
     return 0;
+}
+
+//a method that check how many directions and which directions of movement are available
+void RecursiveBacktracking::whichDirectionsAreAvailable()
+{
+    if (this->currentCell.y >= 1)
+    {
+        if (this->grid[this->currentCell.x][this->currentCell.y - 1].visited == false)
+        {
+            this->currentCell.northAvailable = true;
+            this->currentCell.numberOfDirections += 1;
+        }
+        else
+        {
+            this->currentCell.northAvailable = false;
+        }
+    }
+
+    if (this->currentCell.y < (this->height - 1))
+    {
+        if (this->grid[this->currentCell.x][this->currentCell.y + 1].visited == false)
+        {
+            this->currentCell.southAvailable = true;
+            this->currentCell.numberOfDirections += 1;
+        }
+        else
+        {
+            this->currentCell.southAvailable = false;
+        }
+    }
+    if (this->currentCell.x >= 1)
+    {
+        if (this->grid[this->currentCell.x - 1][this->currentCell.y].visited == false)
+        {
+            this->currentCell.westAvailable = true;
+            this->currentCell.numberOfDirections += 1;
+        }
+        else
+        {
+            this->currentCell.westAvailable = false;
+        }
+    }
+    if (this->currentCell.x < (this->width - 1))
+    {
+
+        if (this->grid[this->currentCell.x + 1][this->currentCell.y].visited == false)
+        {
+            this->currentCell.eastAvailable = true;
+            this->currentCell.numberOfDirections += 1;
+        }
+        else
+        {
+            this->currentCell.eastAvailable = false;
+        }
+    }
 }

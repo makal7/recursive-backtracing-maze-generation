@@ -22,7 +22,7 @@ struct Cell
 struct CurrentCell
 {
     int x, y;
-    int direction;
+    int direction, numberOfDirections;
     bool eastAvailable, westAvailable, northAvailable, southAvailable;
 };
 
@@ -38,6 +38,7 @@ class RecursiveBacktracking
     private:
         bool allVisited();
         int setDirection();
+        void whichDirectionsAreAvailable();
 
 
         int width, height;
