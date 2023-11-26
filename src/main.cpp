@@ -2,7 +2,7 @@
 
 int main()
 {
-	RecursiveBacktracking maze(10, 10);
+	makal7::RecursiveBacktracking maze(10, 10);
 	maze.generateMaze();
 	maze.printMaze();
 

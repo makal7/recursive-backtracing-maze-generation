@@ -127,11 +127,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="RecursiveBacktracking.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\RecursiveBacktracking.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="RecursiveBacktracking.hpp" />
+    <ClInclude Include="src\RecursiveBacktracking.hpp" />
+    <ClInclude Include="src\RecursiveBacktrackingDataTypes.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
